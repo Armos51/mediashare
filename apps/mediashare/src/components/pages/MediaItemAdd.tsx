@@ -27,6 +27,7 @@ export const MediaItemAdd = ({ globalState = { tags: [] } }: PageProps) => {
 
   // const author = useAppSelector((state) => state?.user?.entity?.username);
   const [title, setTitle] = useState('');
+  const [isSaved, setIsSaved] = useState(false);
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState(MediaCategoryType.Free);
 
@@ -92,7 +93,7 @@ export const MediaItemAdd = ({ globalState = { tags: [] } }: PageProps) => {
         </ScrollView>
       </KeyboardAvoidingPageContent>
       <PageActions>
-        <ActionButtons onActionClicked={saveItem} onCancelClicked={clearAndGoBack} actionLabel="Save" disableAction={!isValid()} />
+        <ActionButtons onPrimaryClicked={saveItem} loading={isSaved} onSecondaryClicked={clearAndGoBack} primaryLabel="Save" disablePrimary={!isValid()} />
       </PageActions>
     </PageContainer>
   );
@@ -108,6 +109,7 @@ export const MediaItemAdd = ({ globalState = { tags: [] } }: PageProps) => {
   }
 
   async function saveItem() {
+    setIsSaved(true);
     // We only keep track of the tag key, we need to provide a { key, value } pair to to the API
     // Map keys using our tag keys in state... ideally at some point maybe we do this on the server
     const selectedTags = mapSelectedTagKeysToTagKeyValue(selectedTagKeys, availableTags);
@@ -131,6 +133,7 @@ export const MediaItemAdd = ({ globalState = { tags: [] } }: PageProps) => {
     setSelectedTagKeys([]);
     setDescription('');
     setThumbnail('');
+    setIsSaved(false);
     goToMediaItems();
   }
 

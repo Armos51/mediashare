@@ -44,6 +44,7 @@ const MediaItemEdit = ({
   const { mediaId } = route?.params || {};
   const mediaItem = useAppSelector((state) => state?.mediaItem?.entity);
 
+  const [isSaved, setIsSaved] = useState(false);
   const [showDialog, setShowDialog] = useState(false);
   const [title, setTitle] = useState(mediaItem?.title);
   const [description, setDescription] = useState(mediaItem?.description);
@@ -56,7 +57,7 @@ const MediaItemEdit = ({
 
   const [documentUri] = useState(mediaItem?.uri);
   const [thumbnail, setThumbnail] = useState(mediaItem?.thumbnail);
-  const mediaItems = useMediaItems();
+  const viewMediaItems = useMediaItems();
 
   useEffect(() => {
     if (mediaItem) {
@@ -83,6 +84,8 @@ const MediaItemEdit = ({
           showDialog={showDialog}
           title="Delete Media Item"
           subtitle="Are you sure you want to do this? This action is final and cannot be undone."
+          color={theme.colors.white}
+          buttonColor={theme.colors.error}
         />
         <ScrollView>
           <MediaCard
@@ -90,8 +93,12 @@ const MediaItemEdit = ({
             title={title}
             description={description}
             mediaSrc={documentUri}
-            thumbnail={thumbnail}
             showThumbnail={true}
+            thumbnail={thumbnail}
+            thumbnailStyle={{
+              // TODO: Can we do this automatically from video metadata?
+              aspectRatio: 1 / 1
+            }}
             category={category}
             categoryOptions={options}
             onCategoryChange={(e: any) => {
@@ -144,7 +151,7 @@ const MediaItemEdit = ({
         </ScrollView>
       </KeyboardAvoidingPageContent>
       <PageActions>
-        <ActionButtons onActionClicked={saveItem} onCancelClicked={clearAndGoBack} actionLabel="Save" />
+        <ActionButtons loading={isSaved} onPrimaryClicked={saveItem} onSecondaryClicked={clearAndGoBack} primaryLabel="Save" />
       </PageActions>
     </PageContainer>
   );
@@ -160,6 +167,8 @@ const MediaItemEdit = ({
   }
 
   async function saveItem() {
+    setIsSaved(true);
+
     // We only keep track of the tag key, we need to provide a { key, value } pair to to the API
     // Map keys using our tag keys in state... ideally at some point maybe we do this on the server
     const selectedTags = mapSelectedTagKeysToTagKeyValue(selectedTagKeys, availableTags);
@@ -175,12 +184,13 @@ const MediaItemEdit = ({
     };
 
     await dispatch(updateMediaItem(dto));
-    mediaItems().then();
+    setIsSaved(false);
+    await viewMediaItems();
   }
 
   async function deleteItem() {
     await dispatch(deleteMediaItem({ id: mediaId, key: mediaItem.uri }));
-    mediaItems().then();
+    await viewMediaItems();
   }
 
   function resetData() {}

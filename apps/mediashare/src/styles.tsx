@@ -1,5 +1,5 @@
 import { StyleSheet } from 'react-native';
-import { DarkTheme } from 'react-native-paper';
+import { MD2DarkTheme as DarkTheme } from 'react-native-paper';
 
 const theme = {
   ...DarkTheme,
@@ -9,10 +9,11 @@ const theme = {
     background: 'rgba(30,30,30,1)',
     success: '#9ECD3B',
     primary: '#00B8EC',
+    secondary: '#444444', // Custom property
     default: '#BDC1C6',
     darkDefault: '#1D1D1D',
     defaultBorder: 'rgba(255,255,255,0.29)',
-    accent: '#50C100',
+    accent: '#EC6A37', // mandarin orange
     textDarker: '#BDC1C6',
     text: 'rgba(255,255,255,1)',
     error: 'rgba(242,22,81,1)',
@@ -155,17 +156,17 @@ const components = {
         fontFamily: theme.fonts.thin.fontFamily,
       },
       searchBar: {
-        backgroundColor: '#000',
+        backgroundColor: '#1a1a1a',
       },
       container: {
-        backgroundColor: '#000',
+        backgroundColor: '#1a1a1a',
       },
       selectToggle: {
         marginVertical: 10,
         paddingLeft: 15,
         paddingRight: 10,
-        borderWidth: 1,
-        borderColor: theme.colors.defaultBorder,
+        /* borderWidth: 1,
+        borderColor: theme.colors.defaultBorder, */
         backgroundColor: theme.colors.surface,
       },
       selectToggleText: {
@@ -200,6 +201,21 @@ const components = {
       subItemText: {
         fontSize: 15,
         fontFamily: theme.fonts.thin.fontFamily,
+      },
+      confirmText: {
+        fontSize: 15,
+        fontFamily: theme.fonts.regular.fontFamily,
+      },
+      button: {
+        height: 41,
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.29)',
+      },
+      secondaryButton: {
+        height: 41,
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.29)',
+        backgroundColor: '#121212',
       },
     },
   },

@@ -5,7 +5,7 @@ import { useAppSelector } from 'mediashare/store';
 import { useUser } from 'mediashare/hooks/useUser';
 import { loadUser } from 'mediashare/store/modules/user';
 import { getTags } from 'mediashare/store/modules/tags';
-import { findItemsIAmSharing, findItemsSharedWithMe } from 'mediashare/store/modules/shareItems';
+import { findItemsSharedByMe, findItemsSharedWithMe } from 'mediashare/store/modules/shareItems';
 import { BcRolesType, ProfileDto, Tag } from 'mediashare/rxjs-api';
 
 export interface GlobalStateProps {
@@ -22,7 +22,12 @@ export interface GlobalStateProps {
   };
   loadUserData?: () => void;
   search?: any;
+  searchIsActive?: boolean;
+  setSearchIsActive?: Function;
   setSearchFilters?: Function;
+  searchIsFiltering?: () => boolean;
+  openSearchConsole?: Function;
+  closeSearchConsole?: Function;
   tags?: Tag[];
   displayMode?: 'list' | 'article';
   setDisplayMode: (value) => void;
@@ -45,6 +50,7 @@ export const GlobalStateProviderWrapper = (WrappedComponent: any) => {
     const loading = useAppSelector((state) => state?.app?.loading);
     const tags = useAppSelector((state) => state?.tags?.entities || []);
 
+    const [searchIsActive, setSearchIsActive] = useState(false);
     const [searchFilters, setSearchFilters] = useState(INITIAL_SEARCH_FILTERS);
     const [displayMode, setDisplayMode] = useState(INITIAL_DISPLAY_MODE);
 
@@ -64,6 +70,7 @@ export const GlobalStateProviderWrapper = (WrappedComponent: any) => {
     }, [isLoggedIn]);
 
     const providerValue = getProviderValue() as GlobalStateProps;
+
     return (
       <GlobalState.Provider value={providerValue}>
         <WrappedComponent {...props} globalState={providerValue} />
@@ -80,10 +87,15 @@ export const GlobalStateProviderWrapper = (WrappedComponent: any) => {
         roles,
         build,
         loadUserData,
+        openSearchConsole,
+        closeSearchConsole,
+        searchIsActive,
+        setSearchIsActive,
         setSearchFilters,
         search: {
           filters: { ...searchFilters },
         },
+        searchIsFiltering,
         tags,
         displayMode,
         setDisplayMode,
@@ -93,8 +105,19 @@ export const GlobalStateProviderWrapper = (WrappedComponent: any) => {
 
     async function loadUserData() {
       await dispatch(loadUser());
-      await dispatch(findItemsIAmSharing());
-      await dispatch(findItemsSharedWithMe());
+    }
+
+    function openSearchConsole() {
+      setSearchIsActive(true);
+    }
+
+    function closeSearchConsole() {
+      setSearchIsActive(false);
+      setSearchFilters({ text: '', tags: [] });
+    }
+
+    function searchIsFiltering() {
+      return searchFilters?.text !== '' || searchFilters?.tags?.length > 0;
     }
   };
 };

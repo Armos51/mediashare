@@ -2,10 +2,15 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { withGlobalStateConsumer } from 'mediashare/core/globalState';
 import { useAppSelector } from 'mediashare/store';
-import { getPlaylistById, removeUserPlaylist, updateUserPlaylist } from 'mediashare/store/modules/playlist';
+import {
+  getPlaylistById,
+  removeUserPlaylist,
+  selectMappedPlaylistMediaItems,
+  updateUserPlaylist
+} from 'mediashare/store/modules/playlist';
 import { getUserPlaylists } from 'mediashare/store/modules/playlists';
 import { mapAvailableTags, mapSelectedTagKeysToTagKeyValue } from 'mediashare/store/modules/tags';
-import { usePlaylists, useRouteWithParams, useViewMediaItem } from 'mediashare/hooks/navigation';
+import { usePlaylists, useRouteWithParams, useViewMediaItemById } from 'mediashare/hooks/navigation';
 import { withLoadingSpinner } from 'mediashare/components/hoc/withLoadingSpinner';
 import { View, Text, ScrollView } from 'react-native';
 import { Button } from 'react-native-paper';
@@ -23,7 +28,7 @@ import {
 } from 'mediashare/components/layout';
 import { routeNames } from 'mediashare/routes';
 import { createRandomRenderKey } from 'mediashare/core/utils/uuid';
-import { PlaylistCategoryType, MediaItem, MediaCategoryType } from 'mediashare/rxjs-api';
+import { PlaylistCategoryType, MediaItem, MediaCategoryType, PlaylistItem } from 'mediashare/rxjs-api';
 import styles, { theme } from 'mediashare/styles';
 
 const actionModes = { delete: 'delete', default: 'default' };
@@ -33,13 +38,15 @@ const PlaylistEdit = ({ navigation, route, globalState = { tags: [] } }: PagePro
   const dispatch = useDispatch();
 
   const addToPlaylist = useRouteWithParams(routeNames.addItemsToPlaylist);
-  const viewMediaItem = useViewMediaItem();
+  const viewMediaItem = useViewMediaItemById();
   const goToPlaylists = usePlaylists();
 
   const { playlistId } = route.params;
 
+  // TODO: Can we rename 'selected' in state to 'entity'?
   const { loaded, selected } = useAppSelector((state) => state?.playlist);
   const [isLoaded, setIsLoaded] = useState(loaded);
+  const [isSaved, setIsSaved] = useState(false);
 
   const [title, setTitle] = useState(selected?.title);
   const [description, setDescription] = useState(selected?.description);
@@ -74,9 +81,7 @@ const PlaylistEdit = ({ navigation, route, globalState = { tags: [] } }: PagePro
     clearCheckboxSelection();
   }, []);
 
-  // @ts-ignore
-  const items = selected?.mediaItems || [];
-  const author = '';
+  const playlistMediaItems = selectMappedPlaylistMediaItems(selected) || [];
 
   return (
     <PageContainer>
@@ -90,14 +95,19 @@ const PlaylistEdit = ({ navigation, route, globalState = { tags: [] } }: PagePro
           showDialog={showDeleteDialog}
           title="Delete Playlist"
           subtitle="Are you sure you want to do this? This action is final and cannot be undone."
+          color={theme.colors.white}
+          buttonColor={theme.colors.error}
         />
         <ScrollView>
           <MediaCard
             title={title}
-            author={author}
             description={description}
             showThumbnail={true}
             thumbnail={imageSrc}
+            thumbnailStyle={{
+              // TODO: Can we do this automatically from video metadata?
+              aspectRatio: 1 / 1
+            }}
             category={category}
             categoryOptions={options}
             onCategoryChange={(e: any) => {
@@ -159,36 +169,37 @@ const PlaylistEdit = ({ navigation, route, globalState = { tags: [] } }: PagePro
           >
             <ActionButtons
               containerStyles={{ marginHorizontal: 0, marginBottom: 15 }}
-              showCancel={Array.isArray(items) && items.length > 0}
-              cancelIcon="rule"
-              onCancelClicked={() => (!isSelectable ? activateDeleteMode() : cancelDeletePlaylistItems())}
-              cancelIconColor={isSelectable ? theme.colors.primary : theme.colors.disabled}
-              disableAction={actionMode === actionModes.delete}
-              actionLabel="Add To Playlist"
-              actionIcon={!(Array.isArray(items) && items.length > 0) ? 'playlist-add' : undefined}
-              onActionClicked={() => addToPlaylist({ playlistId })}
+              showSecondary={Array.isArray(playlistMediaItems) && playlistMediaItems.length > 0}
+              secondaryIcon="remove"
+              onSecondaryClicked={() => (!isSelectable ? activateDeleteMode() : cancelDeletePlaylistItems())}
+              secondaryIconColor={isSelectable ? theme.colors.primary : theme.colors.disabled}
+              disablePrimary={actionMode === actionModes.delete}
+              primaryLabel="Add Items To Playlist"
+              primaryIcon={!(Array.isArray(playlistMediaItems) && playlistMediaItems.length > 0) ? 'playlist-add' : 'playlist-add'}
+              onPrimaryClicked={() => addToPlaylist({ playlistId })}
             />
             <MediaList
               key={clearSelectionKey}
-              onViewDetail={(item) => viewMediaItem({ mediaId: item._id, uri: item.uri })}
-              list={items}
+              list={playlistMediaItems}
+              showThumbnail={true}
               selectable={isSelectable}
               showActions={!isSelectable}
-              removeItem={onRemoveItem}
+              onViewDetail={(item) => viewMediaItem({ mediaId: item._id, uri: item.uri })}
               addItem={onAddItem}
-              showThumbnail={true}
+              removeItem={onRemoveItem}
             />
           </MediaCard>
         </ScrollView>
       </KeyboardAvoidingPageContent>
       <PageActions>
-        {!isSelectable && <ActionButtons onActionClicked={savePlaylist} onCancelClicked={clearAndGoBack} actionLabel="Save" />}
+        {!isSelectable && <ActionButtons loading={isSaved} onPrimaryClicked={savePlaylist} onSecondaryClicked={clearAndGoBack} primaryLabel="Save" />}
         {isSelectable && (
           <ActionButtons
-            onActionClicked={confirmDeletePlaylistItems}
-            onCancelClicked={cancelDeletePlaylistItems}
-            actionLabel="Remove"
-            actionIconColor={theme.colors.error}
+            onPrimaryClicked={confirmDeletePlaylistItems}
+            onSecondaryClicked={cancelDeletePlaylistItems}
+            primaryLabel="Remove"
+            primaryIconColor={theme.colors.error}
+            primaryButtonStyles={{ backgroundColor: theme.colors.error }}
           />
         )}
       </PageActions>
@@ -215,8 +226,9 @@ const PlaylistEdit = ({ navigation, route, globalState = { tags: [] } }: PagePro
   }
 
   async function savePlaylist() {
+    setIsSaved(true);
     // @ts-ignore
-    const mediaIds = selected.mediaItems.map((item) => item._id) || [];
+    const mediaIds: string[] = selected.mediaItems.map((item) => item._id as string) || [];
     if (isSelectable) {
       const filtered = mediaIds.filter((id) => !selectedItems.includes(id));
       await saveWithIds(filtered);
@@ -225,13 +237,14 @@ const PlaylistEdit = ({ navigation, route, globalState = { tags: [] } }: PagePro
     }
 
     setIsLoaded(false);
+    setIsSaved(false);
     // await loadData();
     goToPlaylists();
   }
 
   async function savePlaylistItems() {
-    // @ts-ignore
-    const mediaIds = selected.mediaItems.map((item) => item._id) || [];
+    // We manage by mediaItemId, as the _id can be either a playlistItemId or a mediaItemId
+    const mediaIds = playlistMediaItems.map((item) => item.mediaItemId) || [];
     if (isSelectable) {
       const filtered = mediaIds.filter((id) => !selectedItems.includes(id));
       await saveWithIds(filtered);
@@ -240,7 +253,7 @@ const PlaylistEdit = ({ navigation, route, globalState = { tags: [] } }: PagePro
     }
 
     setIsLoaded(false);
-    // await loadData();
+    await loadData();
   }
 
   async function saveWithIds(mediaIds: string[]) {
@@ -261,15 +274,13 @@ const PlaylistEdit = ({ navigation, route, globalState = { tags: [] } }: PagePro
     );
   }
 
-  // const [selected, setSelected] = useState(selectedItems.size);
-  function onAddItem(item: MediaItem) {
-    // setSelected(selectedItems.size);
-    const updatedItems = selectedItems.concat([item._id]);
+  function onAddItem(item: PlaylistItem) {
+    const updatedItems = selectedItems.concat([item.mediaId]);
     setSelectedItems(updatedItems);
   }
 
-  function onRemoveItem(selected: MediaItem) {
-    const updatedItems = selectedItems.filter((item) => item !== selected._id);
+  function onRemoveItem(selected: PlaylistItem) {
+    const updatedItems = selectedItems.filter((item) => item !== selected.mediaId);
     setSelectedItems(updatedItems);
   }
 

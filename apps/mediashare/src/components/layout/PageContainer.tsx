@@ -30,7 +30,11 @@ export interface PageContentProps {
 export function PageContent({ children }: PageContentProps) {
   return (
     <View style={styles.pageContent}>
-      <View>{children}</View>
+      <View>
+        <Card>
+          <Card.Content>{children}</Card.Content>
+        </Card>
+      </View>
     </View>
   );
 }
@@ -40,7 +44,9 @@ export function KeyboardAvoidingPageContent({ children }: PageContentProps) {
     <View style={styles.pageContent}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.pageContent}>
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-          <>{children}</>
+          <Card>
+            <Card.Content>{children}</Card.Content>
+          </Card>
         </TouchableWithoutFeedback>
       </KeyboardAvoidingView>
     </View>

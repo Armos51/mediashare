@@ -13,16 +13,26 @@ export interface ContactListProps {
   onViewDetail?: (userId) => void;
   onChecked?: (bool: boolean, userId: string) => void;
   selectable?: boolean;
+  showAll?: boolean;
 }
 
 export const ContactList: React.FC<ContactListProps> = ({
   contacts = [],
   selectable,
   onChecked = () => undefined,
+  showAll = false,
   showActions,
   onViewDetail = () => undefined,
 }) => {
   const namedContacts = contacts.filter((user) => !!user.firstName || !!user.lastName);
+  // TODO: Remove our reliance on this property, we're removing it from the API
+  /* .filter((e) => {
+      if (!showAll && e?.sharedMediaItems) {
+        return e.sharedMediaItems.length > 0;
+      }
+      return e;
+    }); */
+
   const unnamedContacts = contacts.filter((user) => !user.firstName && !user.lastName);
   const mappedAndKeyed = R.values(
     R.groupBy(namedContacts, (user) => (user?.firstName ? user.firstName[0].toUpperCase() : user.username[0].toUpperCase()))
@@ -53,7 +63,7 @@ export const ContactList: React.FC<ContactListProps> = ({
                   description={`@${item.username}`}
                   avatar={item.imageSrc}
                   showLetterLabel={!idx && (!!firstName || !!lastName)}
-                  userId={item._id}
+                  userId={String(item._id)}
                   selectable={selectable}
                   onChecked={onChecked}
                   onViewDetail={onViewDetail}

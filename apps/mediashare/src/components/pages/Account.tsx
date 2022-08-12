@@ -15,13 +15,15 @@ import { loadProfile } from 'mediashare/store/modules/profile';
 import { findMediaItems } from 'mediashare/store/modules/mediaItems';
 import { withGlobalStateConsumer } from 'mediashare/core/globalState';
 import { useWindowDimensions, ScrollView, StyleSheet } from 'react-native';
-import { FAB, Divider, Card } from 'react-native-paper';
+import { FAB, Divider, Card , IconButton} from 'react-native-paper';
 import { withLoadingSpinner } from 'mediashare/components/hoc/withLoadingSpinner';
-import { useRouteWithParams, useViewProfileById } from 'mediashare/hooks/navigation';
+import { useGoToLogin, useRouteWithParams, useViewProfileById } from 'mediashare/hooks/navigation';
 import { useUser } from 'mediashare/hooks/useUser';
 import { PageContainer, PageActions, PageProps, ContactList, ActionButtons, AccountCard, AppDialog } from 'mediashare/components/layout';
 import { createRandomRenderKey } from 'mediashare/core/utils/uuid';
 import { theme } from 'mediashare/styles';
+import { removeShareItemAllByUserId } from 'mediashare/store/modules/shareItems';
+import ModalSheet from '../layout/InviteModal';
 
 const actionModes = { delete: 'delete', default: 'default' };
 const awsUrl = Config.AWS_URL;
@@ -29,12 +31,13 @@ const awsUrl = Config.AWS_URL;
 export const Account = ({ globalState }: PageProps) => {
   const dispatch = useDispatch();
 
+  const goToLogin = useGoToLogin();
   const viewAccount = useRouteWithParams(routeNames.account);
   const editProfile = useRouteWithParams(routeNames.accountEdit);
   const viewProfileById = useViewProfileById();
   const layout = useWindowDimensions();
-
   const [isLoaded, setIsLoaded] = useState(false);
+  const [openInvite, setInvite] = React.useState(false);
 
   const user = useUser();
   const userId = user?._id || null;
@@ -42,10 +45,11 @@ export const Account = ({ globalState }: PageProps) => {
   const fullName = firstName || lastName ? `${firstName} ${lastName}` : 'Unnamed User';
   const [state, setState] = useState(R.pick(user, ['firstName', 'email', 'lastName', 'phoneNumber', 'imageSrc']));
 
-  const contacts = useAppSelector((state) => state?.users?.entities);
+  const contacts = useAppSelector((state) => state?.users?.entities).filter((e) => e._id != userId);
   const [actionMode, setActionMode] = useState(actionModes.default);
   const [isSelectable, setIsSelectable] = useState(false);
   const [selectedItems, setSelectedItems] = React.useState([]);
+
   const [showUnshareDialog, setShowUnshareDialog] = useState(false);
 
   useEffect(() => {
@@ -79,7 +83,6 @@ export const Account = ({ globalState }: PageProps) => {
       { icon: 'edit', onPress: () => editProfile({ userId: user._id }), color: theme.colors.text, style: { backgroundColor: theme.colors.accent } },
     ];
   }
-
   return (
     <PageContainer>
       <AppDialog
@@ -92,6 +95,7 @@ export const Account = ({ globalState }: PageProps) => {
         title="Revoke Access"
         subtitle="Are you sure you want to do this? This action is final and cannot be undone."
       />
+      <ModalSheet showDialog={openInvite} onDismiss={() => setInvite(false)} />
       <AccountCard
         title={fullName}
         username={username}
@@ -107,8 +111,9 @@ export const Account = ({ globalState }: PageProps) => {
         onProfileImageClicked={() => getDocument()}
       />
       <Divider />
-      <Card mode="outlined" style={styles.sectionHeader}>
-        <Card.Title titleStyle={styles.sectionHeaderTitle} title="Subscribers" />
+      <Card elevation={0} style={styles.sectionHeader}>
+        <Card.Title titleStyle={styles.sectionHeaderTitle} title="My Connections"
+         right={(props) => <IconButton {...props} icon="add" onPress={() => setInvite(true)} />}  />
       </Card>
       {/* <Highlights highlights={state.highlights} /> */}
       {!build.forFreeUser && (
@@ -127,10 +132,10 @@ export const Account = ({ globalState }: PageProps) => {
       {isSelectable && actionMode === actionModes.delete && (
         <PageActions>
           <ActionButtons
-            onActionClicked={openUnshareDialog}
-            onCancelClicked={cancelItemsToUnshare}
-            actionLabel="Revoke Access"
-            actionButtonStyles={styles.deleteActionButton}
+            onPrimaryClicked={openUnshareDialog}
+            onSecondaryClicked={cancelItemsToUnshare}
+            primaryLabel="Revoke Access"
+            primaryButtonStyles={styles.deleteActionButton}
           />
         </PageActions>
       )}
@@ -159,7 +164,6 @@ export const Account = ({ globalState }: PageProps) => {
     // @ts-ignore
     const profile = (await dispatch(loadProfile(userId))) as any;
     setState(profile.payload);
-    setIsLoaded(true);
     setIsLoaded(true);
   }
 
@@ -194,6 +198,7 @@ export const Account = ({ globalState }: PageProps) => {
 
   async function accountLogout() {
     await dispatch(logout());
+    goToLogin();
   }
 
   function activateUnshareMode() {
@@ -216,7 +221,6 @@ export const Account = ({ globalState }: PageProps) => {
     setActionMode(actionModes.default);
     clearCheckboxSelection();
     setIsSelectable(false);
-    unshareItems();
   }
 
   function cancelItemsToUnshare() {
@@ -225,23 +229,22 @@ export const Account = ({ globalState }: PageProps) => {
     setIsSelectable(false);
   }
 
-  function unshareItems() {
-    selectedItems.map(async (shareItemId) => {
-      // await unshareItem(shareItemId);
-    }); // TODO: Find a real way to do this, using contactId
-    /* setTimeout(async () => {
-      await dispatch(loadProfile(userId));
-    }, 2500); */
+  async function unshareItems() {
+    await dispatch(removeShareItemAllByUserId(selectedItems));
+    setSelectedItems([]);
+    await dispatch(loadUsers());
   }
 
   function updateSelection(bool: boolean, shareItemId: string) {
-    const filtered = bool ? selectedItems.concat([shareItemId]) : selectedItems.filter((item) => item.shareItemId !== shareItemId);
-    setSelectedItems(filtered);
+    bool
+      ? setSelectedItems((prevState) => [...prevState, shareItemId])
+      : setSelectedItems((prevState) => [...prevState.filter((item) => item !== shareItemId)]);
   }
 
   function clearCheckboxSelection() {
     const randomKey = createRandomRenderKey();
     setClearSelectionKey(randomKey);
+    setSelectedItems([]);
   }
 };
 
@@ -254,8 +257,8 @@ const styles = StyleSheet.create({
   },
   sectionHeaderTitle: {
     textAlign: 'center',
-    fontWeight: 'bold',
-    fontSize: 14,
+    fontWeight: 'normal',
+    fontSize: 16,
   },
   deleteActionButton: {
     backgroundColor: theme.colors.error,

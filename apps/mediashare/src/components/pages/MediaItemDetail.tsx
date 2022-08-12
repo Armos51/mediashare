@@ -8,7 +8,7 @@ import { PageContainer, PageContent, PageProps, MediaCard } from 'mediashare/com
 import { AuthorProfileDto } from 'mediashare/rxjs-api';
 
 // @ts-ignore
-const MediaItemDetail = ({ globalState = { tags: [] } }: PageProps) => {
+export const MediaItemDetail = ({ globalState = { tags: [] } }: PageProps) => {
   const mediaItem = useAppSelector((state) => state?.mediaItem?.entity);
   const {
     _id,
@@ -38,8 +38,12 @@ const MediaItemDetail = ({ globalState = { tags: [] } }: PageProps) => {
             authorProfile={authorProfile}
             description={description}
             mediaSrc={uri}
-            thumbnail={thumbnail}
             showThumbnail={true}
+            thumbnail={thumbnail}
+            thumbnailStyle={{
+              // TODO: Can we do this automatically from video metadata?
+              aspectRatio: 1 / 1
+            }}
             category={category}
             availableTags={mappedTags}
             tags={tagKeys}

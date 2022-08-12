@@ -1,7 +1,6 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { ObjectId } from 'mongodb';
 import { PinoLogger } from 'nestjs-pino';
-import { DeepPartial, FindOneOptions, MongoRepository } from 'typeorm';
+import { DeepPartial, FindManyOptions, FindOneOptions, MongoRepository } from 'typeorm';
 import { SearchParameters } from '@mediashare/shared';
 import { BcBaseEntity } from '../entities/base.entity';
 import { ObjectIdGuard, StringIdGuard } from '@util-lib';
@@ -53,7 +52,7 @@ export abstract class DataService<E extends BcBaseEntity<E>, R extends MongoRepo
     this.logger.info(`${this.constructor.name}findOne props`, id);
     const _id = StringIdGuard(id);
     try {
-      const document = await this.repository.findOne(_id, opts);
+      const document = await this.repository.findOneBy({ _id });
       this.logger.info(`${this.constructor.name} findOne result`, document);
       return clone(document);
     } catch (error) {
@@ -69,11 +68,11 @@ export abstract class DataService<E extends BcBaseEntity<E>, R extends MongoRepo
    * @return {*}
    * @memberof DataService
    */
-  async update(_id: ObjectId, dto: Partial<E>): Promise<Partial<E>> {
-    this.logger.info('update props', _id, dto);
-    const { _id: id, ...rest } = dto;
+  async update(id: IdType, dto: Partial<E>): Promise<Partial<E>> {
+    this.logger.info('update props', id, dto);
+    const { _id, ...rest } = dto;
     try {
-      const update = await this.repository.findOneAndUpdate({ _id }, { $set: { ...rest } });
+      const update = await this.repository.findOneAndUpdate({ _id: ObjectIdGuard(id) }, { $set: { ...rest } });
 
       this.logger.info('update result', update);
 
@@ -126,7 +125,7 @@ export abstract class DataService<E extends BcBaseEntity<E>, R extends MongoRepo
    * @return {*}
    * @memberof DataService
    */
-  async findByQuery(query: Partial<E>): Promise<E> {
+  async findByQuery(query: FindManyOptions<E>): Promise<E> {
     this.logger.info(`${this.constructor.name}.findByQuery`);
 
     try {
@@ -145,7 +144,7 @@ export abstract class DataService<E extends BcBaseEntity<E>, R extends MongoRepo
    * @return {*}
    * @memberof DataService
    */
-  async findAllByQuery(query: Partial<E>): Promise<E[]> {
+  async findAllByQuery(query: FindManyOptions<E>): Promise<E[]> {
     this.logger.info(`${this.constructor.name}.findByQuery`);
 
     try {

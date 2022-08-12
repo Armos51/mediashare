@@ -13,39 +13,48 @@ export interface DisplayPreviewOrVideoProps {
   isPlayable?: boolean;
   showThumbnail?: boolean;
   thumbnail?: string;
+  style?: any;
 }
 
-export const DisplayPreviewOrVideo: React.FC<DisplayPreviewOrVideoProps> = ({ mediaSrc, isPlayable = false, showThumbnail = true, thumbnail = null }) => {
+// TODO: Use MediaPreview component!
+export const DisplayPreviewOrVideo: React.FC<DisplayPreviewOrVideoProps> = ({ mediaSrc, isPlayable = false, showThumbnail = true, thumbnail = null, style = {} }) => {
   const getMediaDisplayMode = () => (showThumbnail && thumbnail ? 'image' : 'video');
   const initialMediaDisplayMode = isPlayable ? (getMediaDisplayMode() as MediaDisplayMode) : 'image';
   const [mediaDisplayMode, setMediaDisplayMode] = useState(initialMediaDisplayMode);
 
+  console.log(`[DisplayPreviewOrVideo] thumbnail: ${thumbnail}`);
   const { imageSrc, isDefaultImage } = usePreviewImage(thumbnail);
-  return mediaDisplayMode === 'image' && !isDefaultImage ? (
-    <ImageBackground source={{ uri: imageSrc }} resizeMode="cover" style={{ width: '100%', height: 250 }}>
-      {isPlayable && (
-        <TouchableWithoutFeedback onPress={toggleMediaMode}>
-          <View style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
-            <Button icon="play-circle-filled" color="#ffffff" labelStyle={{ fontSize: 50 }}>
-              {' '}
-            </Button>
-          </View>
-        </TouchableWithoutFeedback>
-      )}
-    </ImageBackground>
-  ) : mediaDisplayMode === 'video' && mediaSrc ? (
-    <>
-      {/* TODO: This react-native-video version doesn't work with web and the lib has over a thousand open issues */}
-      <Video
-        source={{ uri: mediaSrc }}
-        poster={imageSrc}
-        style={{ width: '100%', height: 300, margin: 3, marginBottom: 6 }}
-        resizeMode="contain"
-        controls={true}
-        paused={false}
-      />
-      {/* Use expo-av + expo-video-player */}
-      {/* <Video
+  console.log(`imageSrc: ${imageSrc}, isDefaultImage: ${isDefaultImage}`)
+  return (
+    <View
+      style={{
+        aspectRatio: 16 / 9,
+        width: '100%',
+        height: 'auto',
+        marginLeft: 'auto',
+        marginRight: 'auto',
+        ...style
+      }}
+    >
+      {/* TODO: Use MediaPreview component here! */}
+      {mediaDisplayMode === 'image' && !isDefaultImage ? (
+        <ImageBackground source={{ uri: imageSrc }} resizeMode="cover" style={{ width: '100%', height: '100%' }}>
+          {isPlayable && (
+            <TouchableWithoutFeedback onPress={toggleMediaMode}>
+              <View style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+                <Button icon="play-circle-filled" textColor="rgba(255,255,255,0.666)" labelStyle={{ fontSize: 50 }}>
+                  {' '}
+                </Button>
+              </View>
+            </TouchableWithoutFeedback>
+          )}
+        </ImageBackground>
+      ) : mediaDisplayMode === 'video' && mediaSrc ? (
+        <>
+          {/* TODO: This react-native-video version doesn't work with web and the lib has over a thousand open issues */}
+          <Video source={{ uri: mediaSrc }} poster={imageSrc} style={{ width: '100%', height: '100%' }} resizeMode="contain" controls={true} paused={false} />
+          {/* Use expo-av + expo-video-player */}
+          {/* <Video
           styles={{
             height: 300,
           }}
@@ -58,8 +67,10 @@ export const DisplayPreviewOrVideo: React.FC<DisplayPreviewOrVideoProps> = ({ me
             },
           }}
         /> */}
-    </>
-  ) : null;
+        </>
+      ) : null}
+    </View>
+  );
 
   function toggleMediaMode() {
     const current = mediaDisplayMode as MediaDisplayMode;

@@ -6,11 +6,12 @@ import { useAppSelector } from 'mediashare/store';
 import { deleteMediaItem } from 'mediashare/store/modules/mediaItem';
 import { findMediaItems } from 'mediashare/store/modules/mediaItems';
 import { withGlobalStateConsumer } from 'mediashare/core/globalState';
-import { useRouteName, useEditMediaItem } from 'mediashare/hooks/navigation';
+import { withPlaylistSearch } from 'mediashare/components/hoc/withPlaylistSearch';
+import { useRouteName, useEditMediaItemById } from 'mediashare/hooks/navigation';
+import { withLoadingSpinner } from 'mediashare/components/hoc/withLoadingSpinner';
 import { AuthorProfileDto, MediaItem, MediaItemResponseDto } from 'mediashare/rxjs-api';
 import { RefreshControl } from 'react-native';
 import { FAB, Divider } from 'react-native-paper';
-import { withLoadingSpinner } from 'mediashare/components/hoc/withLoadingSpinner';
 import {
   PageContainer,
   PageProps,
@@ -20,6 +21,7 @@ import {
   ActionButtons,
   NoItems,
   AppDialog,
+  NoContent,
 } from 'mediashare/components/layout';
 import { createRandomRenderKey } from 'mediashare/core/utils/uuid';
 import { selectMediaItem } from 'mediashare/store/modules/mediaItems';
@@ -58,8 +60,9 @@ export const MediaComponent = ({
           titleStyle={styles.titleText}
           description={<MediaListItem.Description data={{ authorProfile, description }} />}
           showThumbnail={true}
-          showActions={showActions}
           image={thumbnail}
+          showPlayableIcon={false}
+          showActions={showActions}
           iconRight="edit"
           iconRightColor={theme.colors.default}
           selectable={selectable}
@@ -74,39 +77,26 @@ export const MediaComponent = ({
 
 const actionModes = { delete: 'delete', default: 'default' };
 
+const MediaComponentWithSearch = withPlaylistSearch(MediaComponent);
+
 export const Media = ({ navigation, globalState }: PageProps) => {
   const dispatch = useDispatch();
 
   const addFromFeed = useRouteName(routeNames.addFromFeed);
   const addMedia = useRouteName(routeNames.mediaItemAdd);
-  const editMedia = useEditMediaItem();
+  const editMedia = useEditMediaItemById();
 
   const [isSelectable, setIsSelectable] = useState(false);
   const [actionMode, setActionMode] = useState(actionModes.default);
   const [refreshing, setRefreshing] = useState(false);
-
-  const { loading, loaded, entities, selected } = useAppSelector((state) => state?.mediaItems);
-  const [isLoaded, setIsLoaded] = useState(loaded);
-  useEffect(() => {
-    if (loaded && !isLoaded) {
-      setIsLoaded(true);
-    }
-  }, [loaded]);
-
   const onRefresh = useCallback(refresh, [dispatch]);
-  const searchFilters = globalState?.search?.filters || { text: '', tags: [] };
-  const [prevSearchFilters, setPrevSearchFilters] = useState({ filters: { text: '', tags: [] } });
-  useEffect(() => {
-    const currentSearchFilters = globalState?.search;
-    if (!isLoaded || JSON.stringify(currentSearchFilters) !== JSON.stringify(prevSearchFilters)) {
-      setPrevSearchFilters(currentSearchFilters);
-      loadData().then();
-    }
-  }, [isLoaded, globalState, searchFilters]);
+
+  const { entities, selected, loaded, loading } = useAppSelector((state) => state?.mediaItems);
 
   const [clearSelectionKey, setClearSelectionKey] = useState(createRandomRenderKey());
   useEffect(() => {
     clearCheckboxSelection();
+    loadData().then();
   }, []);
 
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -115,7 +105,7 @@ export const Media = ({ navigation, globalState }: PageProps) => {
   const fabActions = [
     { icon: 'delete-forever', onPress: activateDeleteMode, color: theme.colors.text, style: { backgroundColor: theme.colors.error } },
     { icon: 'cloud-download', onPress: addFromFeed, color: theme.colors.text, style: { backgroundColor: theme.colors.primary } },
-    { icon: 'library-add', onPress: addMedia, color: theme.colors.text, style: { backgroundColor: theme.colors.accent } },
+    { icon: 'add-circle', onPress: addMedia, color: theme.colors.text, style: { backgroundColor: theme.colors.accent } },
   ];
 
   return (
@@ -130,29 +120,38 @@ export const Media = ({ navigation, globalState }: PageProps) => {
           showDialog={showDeleteDialog}
           title="Delete Media Items"
           subtitle="Are you sure you want to do this? This action is final and cannot be undone."
+          color={theme.colors.white}
+          buttonColor={theme.colors.error}
         />
-        {isLoaded ? (
-          <MediaComponent
-            key={clearSelectionKey}
-            navigation={navigation}
-            list={entities}
-            showActions={!isSelectable}
-            selectable={isSelectable}
-            onViewDetail={onEditItem}
-            onChecked={updateSelection}
+        <MediaComponentWithSearch
+          globalState={globalState}
+          loaded={(!loaded && !loading) || (loaded && entities.length > 0)}
+          loadData={loadData}
+          searchTarget="media"
+          key={clearSelectionKey}
+          navigation={navigation}
+          list={entities}
+          showActions={!isSelectable}
+          selectable={isSelectable}
+          onViewDetail={onEditItem}
+          onChecked={updateSelection}
+        />
+        {loaded && entities.length === 0 && (
+          <NoContent
+            onPress={addMedia}
+            messageButtonText="You have not added any media items to your library. Please add and item to your library to continue."
+            icon="add-circle"
           />
-        ) : (
-          <NoItems text={loading ? 'Loading...' : 'Please import or upload a media item.'} />
         )}
       </KeyboardAvoidingPageContent>
       {isSelectable && actionMode === actionModes.delete && (
         <PageActions>
           <ActionButtons
-            onActionClicked={openDeleteDialog}
-            onCancelClicked={cancelItemsToDelete}
-            actionLabel="Delete"
-            actionIcon="delete"
-            actionButtonStyles={styles.deleteActionButton}
+            onPrimaryClicked={openDeleteDialog}
+            onSecondaryClicked={cancelItemsToDelete}
+            primaryLabel="Delete"
+            primaryIcon="delete"
+            primaryButtonStyles={styles.deleteActionButton}
           />
         </PageActions>
       )}

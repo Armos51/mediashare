@@ -1,13 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { FlatList } from 'react-native';
-import { Subheading, Card } from 'react-native-paper';
 import { useAppSelector } from 'mediashare/store';
 import { getFeedMediaItems, saveFeedMediaItems } from 'mediashare/store/modules/mediaItem';
 import { AwsMediaItem } from 'mediashare/core/aws/aws-media-item.model';
 import { withLoadingSpinner } from 'mediashare/components/hoc/withLoadingSpinner';
 import { withGlobalStateConsumer } from 'mediashare/core/globalState';
-import { PageContainer, PageContent, PageActions, PageProps, NoItems, ActionButtons, MediaListItem } from 'mediashare/components/layout';
+import { PageContainer, PageContent, PageActions, PageProps, NoItems, ActionButtons, MediaListItem, NoContent } from 'mediashare/components/layout';
 import { useMediaItems } from 'mediashare/hooks/navigation';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -19,41 +18,32 @@ export const AddFromFeed = ({ navigation, globalState }: PageProps) => {
 
   const entities = useAppSelector((state) => state?.mediaItem?.feed?.entities) || [];
   const { loading, loaded } = useAppSelector((state) => state?.mediaItem?.feed);
-  const [isLoaded, setIsLoaded] = useState(loaded);
-  useEffect(() => {
-    if (loaded && !isLoaded) {
-      setIsLoaded(true);
-    }
-  }, [loaded]);
 
   const searchFilters = globalState?.search?.filters || { text: '', tags: [] };
   const [prevSearchFilters, setPrevSearchFilters] = useState({ filters: { text: '', tags: [] } });
   useEffect(() => {
     const currentSearchFilters = globalState?.search;
-    if (!isLoaded || JSON.stringify(currentSearchFilters) !== JSON.stringify(prevSearchFilters)) {
+    if (!loaded || JSON.stringify(currentSearchFilters) !== JSON.stringify(prevSearchFilters)) {
       setPrevSearchFilters(currentSearchFilters);
       loadData().then();
     }
-  }, [isLoaded, globalState, searchFilters]);
+  }, [loaded, globalState, searchFilters]);
 
   return (
     <PageContainer>
       <PageContent>
-        {(!entities || entities.length === 0) && loaded && (
-          <Card>
-            <Card.Content>
-              <Subheading style={{ textAlign: 'center' }}>There are no items to import in your bucket.</Subheading>
-            </Card.Content>
-          </Card>
-        )}
-        {isLoaded ? (
+        {loaded && entities.length > 0 && (
           <FlatList data={entities} renderItem={({ item }) => renderVirtualizedListItem(item)} />
-        ) : (
-          <NoItems text={loading ? 'Loading...' : 'There are no items in your S3 bucket.'} />
+        )}
+        {loaded && entities.length === 0 && (
+          <NoContent
+            messageButtonText="There are no items in your S3 bucket to import. Please choose another bucket or add files to this bucket to continue."
+            icon="cloud-download"
+          />
         )}
       </PageContent>
       <PageActions>
-        <ActionButtons onActionClicked={saveItems} actionLabel="Add Media" onCancelClicked={goToMediaItems} />
+        <ActionButtons onPrimaryClicked={saveItems} primaryLabel="Add Media" onSecondaryClicked={goToMediaItems} />
       </PageActions>
     </PageContainer>
   );
@@ -62,8 +52,9 @@ export const AddFromFeed = ({ navigation, globalState }: PageProps) => {
     const { key, size, lastModified } = item;
     return (
       <MediaListItem
-        showActions={false}
         key={`s3_item_${key}`}
+        showActions={false}
+        showPlayableIcon={false}
         title={key}
         description={`${size} - ${lastModified}`}
         checked={false}

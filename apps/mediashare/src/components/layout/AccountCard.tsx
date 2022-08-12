@@ -42,13 +42,13 @@ export const AccountCard = ({
 
   // <MaterialIcons name={read ? 'visibility' : 'visibility-off'} size={24} />
   // <View styles={defaultStyles.buttonContainer}>
-  //   <IconButton icon="delete-outline" color={theme.colors.text} size={20} onPress={onDelete} />
-  //   <IconButton icon="play-circle-filled" color={theme.colors.text} size={20} onPress={onView} />
+  //   <IconButton icon="delete-outline" iconColor={theme.colors.text} size={20} onPress={onDelete} />
+  //   <IconButton icon="play-circle-filled" iconColor={theme.colors.text} size={20} onPress={onView} />
   // </View>
   // <Menu.Item icon="play-circle-filled" onPress={() => {}} title="Watch" />
   return (
     <>
-      <Card mode="elevated">
+      <Card mode="elevated" style={defaultStyles.card}>
         <Card.Title
           style={defaultStyles.header}
           left={() =>
@@ -67,7 +67,8 @@ export const AccountCard = ({
           titleStyle={defaultStyles.title}
           subtitle={
             <View>
-              <Subheading style={{ ...defaultStyles.subtitleText, color: theme.colors.primary }}>@{username}</Subheading>
+              {/* TODO: Fix username display on Android */}
+              {/*<Subheading style={{ ...defaultStyles.subtitleText, color: theme.colors.primary }}>@{username}</Subheading>*/}
               <Subheading style={{ ...defaultStyles.subtitleText }}>{email}</Subheading>
             </View>
           }
@@ -83,8 +84,8 @@ export const AccountCard = ({
                   </IconButton>
                 }
               >
-                {isCurrentUser && <Menu.Item icon="delete-forever" onPress={() => {}} title="Delete Account" />}
-                {profile?.build?.forAdmin && !isCurrentUser && <Menu.Item icon="delete-forever" onPress={() => {}} title="Deactivate" />}
+                {isCurrentUser && <Menu.Item trailingIcon="delete-forever" onPress={() => {}} title="Delete Account" />}
+                {profile?.build?.forAdmin && !isCurrentUser && <Menu.Item trailingIcon="delete-forever" onPress={() => {}} title="Deactivate" />}
               </Menu>
             ) : null
           }
@@ -123,6 +124,9 @@ export const AccountCard = ({
 };
 
 const defaultStyles = StyleSheet.create({
+  card: {
+    paddingBottom: 15,
+  },
   header: {
     paddingTop: 30,
     paddingBottom: 10,
