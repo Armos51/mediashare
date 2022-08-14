@@ -2,12 +2,12 @@
 <Workspace
    version = "1.0">
    <FileRef
-      location = "group:/Users/lucas/Workspaces/bluecollar_mediashare/apps/mediashare/ios/Mediashare.xcodeproj">
+      location = "group:/Users/lucas/Workspaces/bluecollar_mediashare/apps/pocketphysio/ios/PocketPhysioTherapist.xcodeproj">
    </FileRef>
    <FileRef
       location = "group:Pods/Pods.xcodeproj">
    </FileRef>
    <FileRef
-      location = "group:Mediashare.xcodeproj">
+      location = "group:PocketPhysioTherapist.xcodeproj">
    </FileRef>
 </Workspace>
