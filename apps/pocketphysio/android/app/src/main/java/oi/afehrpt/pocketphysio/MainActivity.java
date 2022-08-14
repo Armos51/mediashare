@@ -1,4 +1,4 @@
-package oi.bluecollardev.mediashare;
+package oi.afehrpt.pocketphysio;
 
 import com.facebook.react.ReactActivity;
 
@@ -10,6 +10,6 @@ public class MainActivity extends ReactActivity {
    */
   @Override
   protected String getMainComponentName() {
-    return "Mediashare";
+    return "PocketPhysioTherapist";
   }
 }

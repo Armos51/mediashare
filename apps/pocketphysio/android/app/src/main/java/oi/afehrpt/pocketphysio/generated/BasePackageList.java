@@ -1,4 +1,4 @@
-package oi.bluecollardev.mediashare.generated;
+package oi.afehrpt.pocketphysio.generated;
 
 import java.util.Arrays;
 import java.util.List;

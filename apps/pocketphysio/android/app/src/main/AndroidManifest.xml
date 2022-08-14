@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-  package="oi.bluecollardev.mediashare">
+  package="oi.afehrpt.pocketphysio">
 
     <uses-permission android:name="android.permission.INTERNET" />
 

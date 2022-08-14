@@ -7,11 +7,11 @@
 #define TIMEOUT_SECONDS 600
 #define TEXT_TO_LOOK_FOR @"Welcome to React"
 
-@interface MediashareTests : XCTestCase
+@interface PocketPhysioTherapistTests : XCTestCase
 
 @end
 
-@implementation MediashareTests
+@implementation PocketPhysioTherapistTests
 
 - (BOOL)findSubviewInView:(UIView *)view matching:(BOOL(^)(UIView *view))test
 {

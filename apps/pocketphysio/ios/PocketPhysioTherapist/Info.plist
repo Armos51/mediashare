@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
-	<string>Mediashare</string>
+	<string>Pocket Physio Therapist</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -23,22 +23,22 @@
 	<key>CFBundleVersion</key>
 	<string>9</string>
 	<key>LSApplicationCategoryType</key>
-	<string />
+	<string></string>
 	<key>LSRequiresIPhoneOS</key>
-	<true />
+	<true/>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsArbitraryLoads</key>
-		<true />
+		<true/>
 		<key>NSExceptionDomains</key>
-		<dict />
+		<dict/>
 	</dict>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>MediaShare is an application designed to share videos and other content that someone creates with other application users. To get data to share it needs to be uploaded from the Photo Library.</string>
+	<string>Pocket Physio Therapist</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>MediaShare is an application designed to share videos and other content that someone creates with other application users. To get data to share it needs to be uploaded from the Photo Library.</string>
+	<string>Pocket Physio Therapist</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>MediaShare is an application designed to share videos and other content that someone creates with other application users. To get data to share it needs to be uploaded from the Photo Library.</string>
+	<string>Pocket Physio Therapist</string>
 	<key>UIAppFonts</key>
 	<array>
 		<string>MaterialCommunityIcons.ttf</string>
@@ -72,6 +72,6 @@
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
-	<false />
+	<false/>
 </dict>
 </plist>
