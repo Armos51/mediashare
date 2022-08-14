@@ -10,10 +10,7 @@ import renderInvitationEmailTemplate from './invitation-email.template';
 @ApiTags('user-connection')
 @Controller('user-connection')
 export class UserConnectionController {
-  constructor(
-    private readonly userConnectionService: UserConnectionService,
-    private readonly userService: UserService
-  ) {}
+  constructor(private readonly userConnectionService: UserConnectionService, private readonly userService: UserService) {}
 
   @Post()
   @ApiBody({ type: CreateUserConnectionDto })
@@ -39,13 +36,13 @@ export class UserConnectionController {
       subject: process.env['INVITATION_EMAIL_SUBJECT'],
       // Create new identity on AWS SES
       from: process.env['INVITATION_EMAIL_SENDER'],
-      html: renderInvitationEmailTemplate(user)
+      html: renderInvitationEmailTemplate(user),
     };
 
     try {
       await this.userConnectionService.send(mail);
       return res.status(HttpStatus.OK).json({
-        statusCode: 200
+        statusCode: 200,
       });
     } catch (err) {
       console.log(err);
@@ -53,7 +50,5 @@ export class UserConnectionController {
         statusCode: 500,
       });
     }
-
-
   }
 }

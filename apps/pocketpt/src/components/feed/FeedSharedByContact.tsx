@@ -33,7 +33,12 @@ export const FeedSharedByContact = ({ list = [], displayNoContent = false }: Fee
       <SectionHeader title={`Recently Added`} />
       {sortedList && sortedList.length > 0 && (
         <>
-          <FlatList horizontal={true} data={sortedList} renderItem={({ item }) => renderVirtualizedListItem(item)} keyExtractor={({ _id }) => `playlist_${_id}`} />
+          <FlatList
+            horizontal={true}
+            data={sortedList}
+            renderItem={({ item }) => renderVirtualizedListItem(item)}
+            keyExtractor={({ _id }) => `playlist_${_id}`}
+          />
           <Button
             icon="list"
             color={theme.colors.darkDefault}
@@ -48,9 +53,7 @@ export const FeedSharedByContact = ({ list = [], displayNoContent = false }: Fee
           </Button>
         </>
       )}
-      {noContentIsVisible && (
-        <NoContent messageButtonText="Items that are shared with you will show up in your feed." icon="view-list" />
-      )}
+      {noContentIsVisible && <NoContent messageButtonText="Items that are shared with you will show up in your feed." icon="view-list" />}
     </View>
   );
 
@@ -59,7 +62,7 @@ export const FeedSharedByContact = ({ list = [], displayNoContent = false }: Fee
     const { _id = '', title = '', authorProfile = {} as AuthorProfileDto, description = '', mediaIds = [], mediaItems = [], imageSrc = '' } = item;
     const dimensions = {
       w: Dimensions.get('window').width / 2,
-      h: Dimensions.get('window').width / 2 + 100
+      h: Dimensions.get('window').width / 2 + 100,
     };
 
     console.log(`[DisplayPreviewOrVideo] thumbnail: ${imageSrc}`);
@@ -82,7 +85,7 @@ export const FeedSharedByContact = ({ list = [], displayNoContent = false }: Fee
             thumbnailStyle={{
               aspectRatio: 1 / 1,
               padding: 10,
-              paddingBottom: 0
+              paddingBottom: 0,
             }}
             showActions={false}
             showAvatar={false}

@@ -61,7 +61,6 @@ export class UserController {
     });
     const profile = await this.userService.getUserById(StringIdGuard(newUser._id));
     return res.send(profile);
-
   }
 
   @Post('logout')

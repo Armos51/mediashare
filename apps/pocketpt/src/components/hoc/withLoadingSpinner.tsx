@@ -24,12 +24,7 @@ export interface LoadingSpinnerProps {
  */
 export const withLoadingSpinner = (stateSelector = (state: any) => state?.user?.loading) => {
   return function LoadingSpinnerWrapper(WrappedComponent: any) {
-    return function LoadingSpinner(
-      {
-        startLoad = () => undefined,
-        endLoad = () => undefined,
-        ...rest
-      }: LoadingSpinnerProps & any) {
+    return function LoadingSpinner({ startLoad = () => undefined, endLoad = () => undefined, ...rest }: LoadingSpinnerProps & any) {
       const loading = useAppSelector(stateSelector);
       if (!loading) startLoad();
       const [isLoading, setIsLoading] = useState(loading);

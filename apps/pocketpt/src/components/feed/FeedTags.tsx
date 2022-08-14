@@ -19,7 +19,7 @@ export const FeedTags = ({ list = [], onViewDetailClicked, displayNoContent = fa
   const displayTags = sortedList.slice(0, 6);
 
   const dimensions = {
-    w: Dimensions.get('window').width
+    w: Dimensions.get('window').width,
   };
 
   const noContentIsVisible = displayNoContent && sortedList && sortedList.length === 0;
@@ -32,22 +32,12 @@ export const FeedTags = ({ list = [], onViewDetailClicked, displayNoContent = fa
           <View style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', width: dimensions.w, marginBottom: 10 }}>
             {displayTags.map((tag) => renderVirtualizedListItem(tag))}
           </View>
-          <Button
-            icon="label"
-            color={theme.colors.darkDefault}
-            textColor={theme.colors.primary}
-            uppercase={false}
-            mode="outlined"
-            compact
-            dark
-          >
+          <Button icon="label" color={theme.colors.darkDefault} textColor={theme.colors.primary} uppercase={false} mode="outlined" compact dark>
             List All Tags
           </Button>
         </>
       )}
-      {noContentIsVisible && (
-        <NoContent messageButtonText="Items that are shared with you will show up in your feed." icon="view-list" />
-      )}
+      {noContentIsVisible && <NoContent messageButtonText="Items that are shared with you will show up in your feed." icon="view-list" />}
     </View>
   );
 
@@ -55,7 +45,7 @@ export const FeedTags = ({ list = [], onViewDetailClicked, displayNoContent = fa
     // TODO: Can we have just one or the other, either mediaIds or mediaItems?
     const { key = '', value = '', description = '', mediaIds = [], mediaItems = [], imageSrc = '' } = item;
     const dimensions = {
-      w: Dimensions.get('window').width / 2
+      w: Dimensions.get('window').width / 2,
     };
 
     return (

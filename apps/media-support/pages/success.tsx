@@ -1,5 +1,5 @@
 import type { NextPage } from 'next';
-import Image from 'next/image'
+import Image from 'next/image';
 import React from 'react';
 import logo from '../image/152_logo.png';
 
@@ -27,7 +27,8 @@ const Success: NextPage = () => {
         </div>
         <h1 style={{ textAlign: 'center' }}>Welcome to Mediashare</h1>
         <p style={{ textAlign: 'center' }}>
-          Your account has been created. Please install the Mediashare app<br /> using the TestFlight app on your iOS phone or tablet.
+          Your account has been created. Please install the Mediashare app
+          <br /> using the TestFlight app on your iOS phone or tablet.
         </p>
       </div>
     </div>

@@ -4,17 +4,13 @@ import { ApiService } from 'mediashare/store/apis';
 import { ProfileDto } from 'mediashare/rxjs-api';
 
 // Define these in snake case or our converter won't work... we need to fix that
-const profileActionNames = [
-  'get_user_by_id',
-] as const;
+const profileActionNames = ['get_user_by_id'] as const;
 
 export const profileActions = makeActions(profileActionNames);
 
-export const loadProfile = createAsyncThunk(profileActions.getUserById.type, async (userId: string | undefined, { extra  }) => {
+export const loadProfile = createAsyncThunk(profileActions.getUserById.type, async (userId: string | undefined, { extra }) => {
   const { api } = extra as { api: ApiService };
-  return userId ?
-    await api.users.usersControllerFindOne({ userId }).toPromise() :
-    await api.user.userControllerGetUser().toPromise();
+  return userId ? await api.users.usersControllerFindOne({ userId }).toPromise() : await api.user.userControllerGetUser().toPromise();
 });
 
 interface ProfileState {
@@ -36,10 +32,12 @@ const profileSlice = createSlice({
   initialState: profileInitialState,
   reducers: {},
   extraReducers: (builder) => {
-    builder
-      .addCase(loadProfile.fulfilled, (state, action) => ({
-        ...state, entity: action.payload, loading: false, loaded: true
-      }));
+    builder.addCase(loadProfile.fulfilled, (state, action) => ({
+      ...state,
+      entity: action.payload,
+      loading: false,
+      loaded: true,
+    }));
   },
 });
 

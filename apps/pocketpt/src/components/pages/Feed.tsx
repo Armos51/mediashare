@@ -47,19 +47,18 @@ export const Feed = ({
     <PageContainer>
       <PageContent>
         <ScrollView>
-          {(!loaded && !loading) || (loaded && list.length > 0) && (
-            <FeedComponentWithSearch
-              globalState={globalState}
-              loaded={(!loaded && !loading) || (loaded && entities.length > 0)}
-              loadData={loadData}
-              searchTarget="playlists"
-              list={list}
-              tags={tags}
-            />
-          )}
-          {loaded && list.length === 0 && (
-            <NoContent messageButtonText="Items that are shared with you will show up in your feed." icon="view-list" />
-          )}
+          {(!loaded && !loading) ||
+            (loaded && list.length > 0 && (
+              <FeedComponentWithSearch
+                globalState={globalState}
+                loaded={(!loaded && !loading) || (loaded && entities.length > 0)}
+                loadData={loadData}
+                searchTarget="playlists"
+                list={list}
+                tags={tags}
+              />
+            ))}
+          {loaded && list.length === 0 && <NoContent messageButtonText="Items that are shared with you will show up in your feed." icon="view-list" />}
         </ScrollView>
       </PageContent>
     </PageContainer>

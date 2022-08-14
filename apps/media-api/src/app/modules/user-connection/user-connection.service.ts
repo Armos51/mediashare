@@ -38,7 +38,7 @@ export class UserConnectionService extends DataService<UserConnection, MongoRepo
     }
   }
 
-  async send(mail){
+  async send(mail) {
     const transport = await this.sesService.sendEmail(mail);
     return transport;
   }
