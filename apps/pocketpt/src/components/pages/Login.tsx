@@ -5,7 +5,7 @@ import { loginAction } from 'mediashare/store/modules/user';
 import { RootState } from 'mediashare/store';
 import { Authenticator, SignIn, SignUp, Greetings, VerifyContact, ForgotPassword, AmplifyTheme, ConfirmSignIn } from 'aws-amplify-react-native';
 import { withLoadingSpinner } from 'mediashare/components/hoc/withLoadingSpinner';
-import { Button, Card } from 'react-native-paper';
+import { Button, Card, Divider } from 'react-native-paper';
 import { PageContainer, PageProps, KeyboardAvoidingPageContent } from 'mediashare/components/layout/PageContainer';
 import { theme } from 'mediashare/styles';
 
@@ -193,10 +193,11 @@ const LoginComponent = ({}: PageProps) => {
           <Card elevation={0}>
             <Card.Cover
               resizeMode="contain"
-              source={require('mediashare/assets/logo/mediashare/256.png')}
-              style={{ backgroundColor: theme.colors.background }}
+              source={require('pocketpt/src/assets/splash.png')}
+              style={{ backgroundColor: theme.colors.background, width: '100%', height: 300 }}
             />
           </Card>
+          <Divider style={{ marginTop: 15, marginBottom: 15, backgroundColor: 'transparent' }} />
           {show && (
             <Authenticator theme={MyTheme} onStateChange={(authState, data) => updateAuthState(authState, data)} hideDefault={false}>
               {/* <MyCustomSignUp override={'SignUp'} /> */}
