@@ -224,6 +224,75 @@
       },
       "tags": []
     },
+    "pocketphysio": {
+      "root": "apps/pocketphysio",
+      "sourceRoot": "apps/pocketphysio/src",
+      "projectType": "application",
+      "generators": {},
+      "targets": {
+        "start": {
+          "executor": "@nrwl/react-native:start",
+          "options": {
+            "port": 8081
+          }
+        },
+        "serve": {
+          "executor": "@nrwl/workspace:run-commands",
+          "options": {
+            "command": "nx start pocketphysio"
+          }
+        },
+        "run-ios": {
+          "executor": "@nrwl/react-native:run-ios",
+          "options": {}
+        },
+        "bundle-ios": {
+          "executor": "@nrwl/react-native:bundle",
+          "outputs": ["apps/pocketphysio/build"],
+          "options": {
+            "entryFile": "apps/pocketphysio/src/main.tsx",
+            "platform": "ios",
+            "bundleOutput": "dist/apps/pocketphysio/ios/main.bundle"
+          }
+        },
+        "run-android": {
+          "executor": "@nrwl/react-native:run-android",
+          "options": {}
+        },
+        "build-android": {
+          "executor": "@nrwl/react-native:build-android",
+          "outputs": ["apps/pocketphysio/android/app/build/outputs/bundle", "apps/pocketphysio/android/app/build/outputs/apk"],
+          "options": {}
+        },
+        "bundle-android": {
+          "executor": "@nrwl/react-native:bundle",
+          "options": {
+            "entryFile": "apps/pocketphysio/src/main.tsx",
+            "platform": "android",
+            "bundleOutput": "dist/apps/pocketphysio/android/main.bundle"
+          }
+        },
+        "lint": {
+          "executor": "@nrwl/linter:eslint",
+          "options": {
+            "lintFilePatterns": ["apps/pocketphysio/**/*.{js,ts,tsx}"]
+          },
+          "outputs": ["{options.outputFile}"]
+        },
+        "sync-deps": {
+          "executor": "@nrwl/react-native:sync-deps",
+          "options": {}
+        },
+        "test": {
+          "executor": "@nrwl/jest:jest",
+          "options": {
+            "jestConfig": "apps/pocketphysio/jest.config.js",
+            "passWithNoTests": true
+          }
+        }
+      },
+      "tags": []
+    },
     "shared": {
       "root": "libs/shared",
       "sourceRoot": "libs/shared/src",
