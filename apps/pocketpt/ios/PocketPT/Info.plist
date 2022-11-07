@@ -23,7 +23,7 @@
 	<key>CFBundleVersion</key>
 	<string>9</string>
 	<key>LSApplicationCategoryType</key>
-	<string></string>
+	<string/>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSAppTransportSecurity</key>
@@ -41,8 +41,9 @@
 	<string>Pocket Physical Therapist</string>
 	<key>UIAppFonts</key>
 	<array>
-		<string>MaterialCommunityIcons.ttf</string>
 		<string>MaterialIcons.ttf</string>
+		<string>FontAwesome.ttf</string>
+		<string>MaterialCommunityIcons.ttf</string>
 		<string>CircularStd-Black.otf</string>
 		<string>CircularStd-BlackItalic.otf</string>
 		<string>CircularStd-Bold.otf</string>
