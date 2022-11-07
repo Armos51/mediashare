@@ -16,7 +16,12 @@ export interface SesEmailOptions {
 @Injectable()
 export class SesService {
   private readonly ses;
-  constructor(@Inject(AKI_KEY) private readonly apiKey, @Inject(REGION) private readonly region, @Inject(SECRET) private readonly secret) {
+  // TODO: Fix this for AWS!
+  constructor() // @Inject(SECRET) private readonly secret, // @Inject(REGION) private readonly region, // @Inject(AKI_KEY) private readonly apiKey,
+  {
+    const apiKey = 'AKIA3ZSOCVIUBBEA4D2M';
+    const region = 'us-west-2';
+    const secret = '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';
     this.ses = ses.createClient({
       key: apiKey,
       amazon: `https://email.${region}.amazonaws.com`,
