@@ -7,7 +7,12 @@
         {
           "category": "auth",
           "resourceName": "mediashare8d5e6b038d5e6b03",
-          "attributes": ["UserPoolId", "AppClientIDWeb", "AppClientID", "IdentityPoolId"]
+          "attributes": [
+            "UserPoolId",
+            "AppClientIDWeb",
+            "AppClientID",
+            "IdentityPoolId"
+          ]
         }
       ]
     },
@@ -17,14 +22,18 @@
       "dependsOn": [],
       "customAuth": false,
       "frontendAuthConfig": {
-        "loginMechanism": ["PREFERRED_USERNAME"],
+        "loginMechanism": [
+          "PREFERRED_USERNAME"
+        ],
         "signupAttributes": [],
         "passwordProtectionSettings": {
           "passwordPolicyMinLength": 8,
           "passwordPolicyCharacters": []
         },
         "mfaConfiguration": "OFF",
-        "mfaTypes": ["SMS"]
+        "mfaTypes": [
+          "SMS"
+        ]
       }
     }
   },
