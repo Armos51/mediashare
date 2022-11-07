@@ -11,6 +11,8 @@ import { UserGetResponse, UserPostResponse } from './user.decorator';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { ProfileDto } from './dto/profile.dto';
 import { AuthorizeDto, InviteDto } from './dto/authorize.dto';
+import { UpdateUserConnectionDto } from '@api-modules/user-connection/dto/update-user-connection.dto';
+import { UserConnectionService } from '@api-modules/user-connection/user-connection.service';
 import { ShareItemService } from '@api-modules/share-item/share-item.service';
 import { MediaItemService } from '@api-modules/media-item/media-item.service';
 import { MediaItemResponseDto } from '@api-modules/media-item/dto/media-item-response.dto';
@@ -18,7 +20,12 @@ import { MediaItemResponseDto } from '@api-modules/media-item/dto/media-item-res
 @ApiTags('user')
 @Controller({ path: ['user'] })
 export class UserController {
-  constructor(private userService: UserService, private shareItemService: ShareItemService, private mediaItemService: MediaItemService) {}
+  constructor(
+    private userService: UserService,
+    private userConnectionService: UserConnectionService,
+    private shareItemService: ShareItemService,
+    private mediaItemService: MediaItemService
+  ) {}
 
   @HttpCode(HttpStatus.OK)
   @Post('authorize')
@@ -52,12 +59,10 @@ export class UserController {
   @Post('invite')
   @ApiBody({ type: InviteDto })
   @ApiResponse({ type: ProfileDto, isArray: false, status: 200 })
-  async invite(@Req() req: Request, @Res() res: Response) {
-    const { email, username } = req.body as any;
-
+  async invite(@Body() InviteDto: InviteDto, @Res() res: Response) {
     const newUser = await this.userService.create({
-      email: email,
-      username: username,
+      email: InviteDto.email,
+      username: InviteDto.username,
       role: 'subscriber',
       imageSrc: 'https://res.cloudinary.com/baansaowanee/image/upload/v1632212064/default_avatar_lt0il8.jpg',
     });
@@ -93,5 +98,15 @@ export class UserController {
   @UserGetResponse({ type: MediaItemResponseDto, isArray: true })
   async getUserMediaItems(@GetUserId() userId: ObjectId) {
     return await this.mediaItemService.getByUserId(userId);
+  }
+
+  @Get('connections')
+  @UseGuards(UserGuard)
+  @ApiBearerAuth()
+  @UserGetResponse({ type: UpdateUserConnectionDto, isArray: true })
+  async getUserConnections(@GetUserId() userId: ObjectId) {
+    const userConnections = await this.userConnectionService.getUserConnections(userId);
+    const connectionUserIds = userConnections.map((uc) => uc.connectionId);
+    return await this.userService.getUsersByIds(connectionUserIds);
   }
 }

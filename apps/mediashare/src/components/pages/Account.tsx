@@ -10,12 +10,11 @@ import { useAppSelector } from 'mediashare/store';
 import { thumbnailRoot } from 'mediashare/core/aws/key-factory';
 import { fetchAndPutToS3 } from 'mediashare/core/aws/storage';
 import { loadUser, logout, updateAccount } from 'mediashare/store/modules/user';
-import { loadUsers } from 'mediashare/store/modules/users';
+import { loadUserConnections } from 'mediashare/store/modules/userConnections';
 import { loadProfile } from 'mediashare/store/modules/profile';
-import { findMediaItems } from 'mediashare/store/modules/mediaItems';
 import { withGlobalStateConsumer } from 'mediashare/core/globalState';
 import { useWindowDimensions, ScrollView, StyleSheet } from 'react-native';
-import { FAB, Divider, Card , IconButton} from 'react-native-paper';
+import { FAB, Divider, Card, IconButton } from 'react-native-paper';
 import { withLoadingSpinner } from 'mediashare/components/hoc/withLoadingSpinner';
 import { useGoToLogin, useRouteWithParams, useViewProfileById } from 'mediashare/hooks/navigation';
 import { useUser } from 'mediashare/hooks/useUser';
@@ -24,6 +23,7 @@ import { createRandomRenderKey } from 'mediashare/core/utils/uuid';
 import { theme } from 'mediashare/styles';
 import { removeShareItemAllByUserId } from 'mediashare/store/modules/shareItems';
 import ModalSheet from '../layout/InviteModal';
+import { signOut } from 'mediashare/core/aws/auth';
 
 const actionModes = { delete: 'delete', default: 'default' };
 const awsUrl = Config.AWS_URL;
@@ -45,7 +45,7 @@ export const Account = ({ globalState }: PageProps) => {
   const fullName = firstName || lastName ? `${firstName} ${lastName}` : 'Unnamed User';
   const [state, setState] = useState(R.pick(user, ['firstName', 'email', 'lastName', 'phoneNumber', 'imageSrc']));
 
-  const contacts = useAppSelector((state) => state?.users?.entities).filter((e) => e._id != userId);
+  const contacts = useAppSelector((state) => state?.userConnections?.entities).filter((e) => e._id != userId);
   const [actionMode, setActionMode] = useState(actionModes.default);
   const [isSelectable, setIsSelectable] = useState(false);
   const [selectedItems, setSelectedItems] = React.useState([]);
@@ -95,7 +95,7 @@ export const Account = ({ globalState }: PageProps) => {
         title="Revoke Access"
         subtitle="Are you sure you want to do this? This action is final and cannot be undone."
       />
-      <ModalSheet showDialog={openInvite} onDismiss={() => setInvite(false)} />
+      <ModalSheet userId={user._id} showDialog={openInvite} onDismiss={() => setInvite(false)} />
       <AccountCard
         title={fullName}
         username={username}
@@ -112,8 +112,13 @@ export const Account = ({ globalState }: PageProps) => {
       />
       <Divider />
       <Card elevation={0} style={styles.sectionHeader}>
-        <Card.Title titleStyle={styles.sectionHeaderTitle} title="My Connections"
-         right={(props) => <IconButton {...props} icon="add" onPress={() => setInvite(true)} />}  />
+        <Card.Title
+          titleStyle={styles.sectionHeaderTitle}
+          title="My Connections"
+          right={(props) => (
+            <IconButton iconColor={theme.colors.success} {...props} style={{ marginRight: 15 }} icon="person-add" onPress={() => setInvite(true)} />
+          )}
+        />
       </Card>
       {/* <Highlights highlights={state.highlights} /> */}
       {!build.forFreeUser && (
@@ -157,10 +162,7 @@ export const Account = ({ globalState }: PageProps) => {
   );
 
   async function loadData() {
-    const { search } = globalState;
-    const args = { text: search?.filters?.text ? search.filters.text : '' };
-    await dispatch(findMediaItems(args));
-    await dispatch(loadUsers());
+    await dispatch(loadUserConnections());
     // @ts-ignore
     const profile = (await dispatch(loadProfile(userId))) as any;
     setState(profile.payload);
@@ -198,7 +200,6 @@ export const Account = ({ globalState }: PageProps) => {
 
   async function accountLogout() {
     await dispatch(logout());
-    goToLogin();
   }
 
   function activateUnshareMode() {
@@ -232,7 +233,7 @@ export const Account = ({ globalState }: PageProps) => {
   async function unshareItems() {
     await dispatch(removeShareItemAllByUserId(selectedItems));
     setSelectedItems([]);
-    await dispatch(loadUsers());
+    await dispatch(loadUserConnections());
   }
 
   function updateSelection(bool: boolean, shareItemId: string) {
@@ -259,6 +260,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontWeight: 'normal',
     fontSize: 16,
+    marginLeft: 60,
   },
   deleteActionButton: {
     backgroundColor: theme.colors.error,

@@ -11,6 +11,22 @@ import MuiAlert, { AlertProps } from '@mui/material/Alert';
 import logo from '../../image/152_logo.png';
 import Image from 'next/image';
 
+export async function getServerSideProps(context: { query: { userId: string; id: string } }) {
+  const { userId, id } = context.query;
+  if (context.query.userId === undefined || context.query.id !== 'id') {
+    return {
+      notFound: true,
+    };
+  }
+  if (userId === '' || id !== 'id') {
+    return {
+      notFound: true,
+    };
+  }
+  return {
+    props: {},
+  };
+}
 
 Amplify.configure({
   ...awsMobile,
@@ -32,26 +48,12 @@ const Alert = React.forwardRef<HTMLDivElement, AlertProps>(function Alert(props,
 
 const Home: NextPage = () => {
   const router = useRouter();
-  const { id } = router.query;
+  const { userId: id } = router.query;
 
-  //   data:{
-  // author: "testUser"
-  // authorId: "62dd71ea71312cea47f85130"
-  // authorImage: "https://res.cloudinary.com/baansaowanee/image/upload/v1632212064/default_avatar_lt0il8.jpg"
-  // authorName: null
-  // email: "mimrachapol@gmail.com"
-  // imageSrc: "https://res.cloudinary.com/baansaowanee/image/upload/v1632212064/default_avatar_lt0il8.jpg"
-  // role: "subscriber"
-  // username: "testUser"
-  // _id: "62dd71ea71312cea47f85130"}
-
-  async function createConnection(data: IFromInput) {
+  async function createUserAWS(data: IFromInput) {
     try {
       const { username, email } = data;
-      // console.log(`${process.env.APP_HOST}/api/user/invite`);
-      const {
-        data: { _id },
-      } = await axios.post(
+      const result = await axios.post(
         `${process.env.NEXT_PUBLIC_API_HOST}/api/user/invite`,
         //`http://localhost:5000/api/user/invite`,
         { username, email },
@@ -61,7 +63,18 @@ const Home: NextPage = () => {
             'Content-Type': 'application/json',
           },
         }
-      )
+      );
+      return result;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async function createConnection(data: IFromInput) {
+    try {
+      const {
+        data: { _id },
+      } = await createUserAWS(data);
       await axios.post(
         `${process.env.NEXT_PUBLIC_API_HOST}/api/user-connection`,
         //`http://localhost:5000/api/user-connection`,
@@ -72,8 +85,7 @@ const Home: NextPage = () => {
             'Content-Type': 'application/json',
           },
         }
-      )
-      router.push('/success');
+      );
     } catch (error) {
       throw error;
     }
@@ -89,7 +101,7 @@ const Home: NextPage = () => {
           email,
         },
       });
-      createConnection(data);
+      await await createConnection(data);
     } catch (error) {
       throw error;
     }
@@ -119,9 +131,12 @@ const Home: NextPage = () => {
     try {
       if (showCode) {
         confirmSignUp(data);
+        router.push('/success');
       } else {
-        await signUp(data);
-        setShowCode(true);
+        if (id) {
+          await signUp(data);
+          setShowCode(true);
+        }
       }
     } catch (error) {
       setOpen(true);
@@ -164,9 +179,7 @@ const Home: NextPage = () => {
             <Image src={logo.src} alt="Picture of the author" width={100} height={100} />
           </div>
           <h1 style={{ textAlign: 'center' }}>Create Account</h1>
-          <p style={{ textAlign: 'center' }}>
-            You've been invited to join the Mediashare private app trial. Please create a user account to continue.
-          </p>
+          <p style={{ textAlign: 'center' }}>You've been invited to join the Mediashare private app trial. Please create a user account to continue.</p>
           <form
             onSubmit={handleSubmit(onSubmit)}
             style={{

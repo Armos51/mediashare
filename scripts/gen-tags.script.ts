@@ -8,11 +8,13 @@ const path = resolve('development.env');
 
 config({ path });
 
-const tagArray = [bcRoles.guest, bcRoles.user, bcRoles.admin];
+const tagArray = [bcRoles.guest, bcRoles.subscriber, bcRoles.admin];
 
 const tagFunctor = (facet: string) => (tag: BcRolesType) => [tag, makeEmailFunctor([tag, facet])] as const;
 
-const makeFieldFunctor = (key: keyof any) => <T>(value: T) => ({ [key]: value });
+const makeFieldFunctor =
+  (key: keyof any) =>
+  <T>(value: T) => ({ [key]: value });
 const makeEmailFunctor = (tag: [BcRolesType, string]) => `${tag[0]}@${tag[1]}`;
 
 const piped = R.pipe(
