@@ -28,14 +28,11 @@ export const FeedRecentlyPlayed = ({ list = [], displayNoContent = false }: Feed
     <View style={{ marginBottom: 15 }}>
       <SectionHeader title={`Resume Playing`} />
       {sortedList && sortedList.length > 0 && (
-        <FlatList
-          horizontal={true}
-          data={sortedList}
-          renderItem={({ item }) => renderVirtualizedListItem(item)}
-          keyExtractor={({ _id }) => `playlist_${_id}`}
-        />
+        <FlatList horizontal={true} data={sortedList} renderItem={({ item }) => renderVirtualizedListItem(item)} keyExtractor={({ _id }) => `playlist_${_id}`} />
       )}
-      {noContentIsVisible && <NoContent messageButtonText="Items that are shared with you will show up in your feed." icon="view-list" />}
+      {noContentIsVisible && (
+        <NoContent messageButtonText="Items that are shared with you will show up in your feed." icon="view-list" />
+      )}
     </View>
   );
 
@@ -44,7 +41,7 @@ export const FeedRecentlyPlayed = ({ list = [], displayNoContent = false }: Feed
     const { _id = '', title = '', authorProfile = {} as AuthorProfileDto, description = '', mediaIds = [], mediaItems = [], imageSrc = '' } = item;
     const dimensions = {
       w: Dimensions.get('window').width / 2,
-      h: Dimensions.get('window').width / 2 + 100,
+      h: Dimensions.get('window').width / 2 + 100
     };
 
     console.log(`[DisplayPreviewOrVideo] thumbnail: ${imageSrc}`);
@@ -66,7 +63,7 @@ export const FeedRecentlyPlayed = ({ list = [], displayNoContent = false }: Feed
             thumbnail={mediaPreview.imageSrc}
             thumbnailStyle={{
               aspectRatio: 1 / 1,
-              padding: 10,
+              padding: 10
             }}
             showActions={false}
             showAvatar={false}
