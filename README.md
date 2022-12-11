@@ -1,4 +1,4 @@
-# Mediashare
+# Pocket Physio Therapist
 
 ## Running the Mediashare App and API
 
@@ -13,7 +13,7 @@ There are two applications in this project.
 
 To run the project locally, you will need to start both of them. You will also have to start the database.
 
-To run the project against staging environment, just start the phone app.
+To run the project againsgit stat staging environment, just start the phone app.
 
 ### Running the Phone App in iOS Simulator
 
